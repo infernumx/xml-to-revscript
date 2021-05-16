@@ -100,6 +100,9 @@ class LuaMonster:
     # TODO: allow nested attrs to have different conversions
     # if converter has nested attrs, but 1 converter, use the converter for all
     # ex: applying int() to <health now="8200" max="8200" />
+    # TODO: process <script> tag
+    # TODO: handle condition immunities in generate_immunities_lua
+    
     conversion = {
         'generics': {
             'nameDescription': 'description',
@@ -353,7 +356,6 @@ class LuaMonster:
                 for key, val in immunities.items()}
 
     def generate_immunities_lua(self, processed: dict) -> str:
-        # TODO: handle condition immunities
         script = '\nmonster.immunities = {\n'
         i = 0
         for element, value in processed.items():
