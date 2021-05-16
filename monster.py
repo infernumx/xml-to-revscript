@@ -131,9 +131,16 @@ class LuaMonster:
             'illusionable': bool,
             'runonhealth': bool,
             'summonable': bool,
+            'canwalkonenergy': bool,
+            'canwalkonfire': bool,
+            'canwalkonpoison': bool,
+            'hidehealth': bool,
+            'isboss': bool,
             'staticattack': int,
             'targetdistance': int,
-            'runonhealth': int
+            'runonhealth': int,
+            'lightcolor': int,
+            'lightlevel': int
         },
         'attacks': {
             'areaEffect': 'effect'
