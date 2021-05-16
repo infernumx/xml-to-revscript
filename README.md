@@ -10,7 +10,6 @@
 ## Generator checklist
 
 - [x] Generics (name, description, experience, health, etc)
-- [x] Flags
 - [x] Attacks
 - [x] Defenses
 - [x] Elements
@@ -18,3 +17,7 @@
 - [ ] Summons
 - [ ] Voices
 - [ ] Loot
+
+## Confirmed fully working generators
+
+ - [x] Flags
