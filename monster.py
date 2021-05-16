@@ -23,7 +23,10 @@ def lua_table(d, indent=0) -> str:
     for k, v in d.items():
         i += 1
         comma = ',' if i != len(d.keys()) else ''
-        ret += f'{tab}{k} = {repr(v).lower()}{comma}\n'
+        value = (repr(v).lower()
+                 if isinstance(v, bool)
+                 else repr(v))
+        ret += f'{tab}{k} = {value}{comma}\n'
     return f'{ret}{table_tab}}}'
 
 
@@ -159,14 +162,16 @@ class LuaMonster:
             'generics': self.process_generics,
             'flags': self.process_flags,
             'attacks': self.process_attacks,
-            'defenses': self.process_defenses
+            'defenses': self.process_defenses,
+            'immunities': self.process_immunities
         })
         self.generator = DispatchTable({
             'generics': self.generate_generics_lua,
             'flags': self.generate_flag_lua,
             'attacks': self.generate_attacks_lua,
             'defenses': self.generate_defenses_lua,
-            'elements': self.generate_elements_lua
+            'elements': self.generate_elements_lua,
+            'immunities': self.generate_immunities_lua
         })
 
     def generate_script(self):
@@ -320,7 +325,7 @@ class LuaMonster:
     def generate_defenses_lua(self, processed: list) -> str:
         script = '\nmonster.defenses = {\n'
         for i, spell in enumerate(processed):
-            comma = ',' if i < len(processed)-1 else ''
+            comma = ',' if i < len(processed) - 1 else ''
             script += f'{lua_table(spell, indent=1)}{comma}\n'
         script += '}'
         return script
@@ -329,8 +334,24 @@ class LuaMonster:
         script = '\nmonster.elements = {\n'
         i = 0
         for element, value in processed.items():
-            comma = ',' if i < len(processed.keys())-1 else ''
-            script += f'\t{{type = {repr(element)}, percent = {value}}}\n'
+            comma = ',' if i < len(processed.keys()) - 1 else ''
+            script += f'\t{{type = {repr(element)}, percent = {value}}}' \
+                      f'{comma}\n'
             i += 1
+        script += '}'
+        return script
+
+    def process_immunities(self, immunities: dict) -> dict:
+        return {key: bool(val)
+                for key, val in immunities.items()}
+
+    def generate_immunities_lua(self, processed: dict) -> str:
+        # TODO: handle condition immunities
+        script = '\nmonster.immunities = {\n'
+        i = 0
+        for element, value in processed.items():
+            comma = ',' if i < len(processed.keys()) - 1 else ''
+            script += f'\t{{type = {repr(element)}, combat = true}}' \
+                      f'{comma}\n'
         script += '}'
         return script
