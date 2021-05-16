@@ -10,6 +10,7 @@
 ## Generator checklist
 
 - [x] Generics (name, description, experience, health, etc)
+- [x] Flags
 - [x] Attacks
 - [x] Defenses
 - [x] Elements
