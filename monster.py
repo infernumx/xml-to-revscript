@@ -102,7 +102,7 @@ class LuaMonster:
     # ex: applying int() to <health now="8200" max="8200" />
     # TODO: process <script> tag
     # TODO: handle condition immunities in generate_immunities_lua
-    
+
     conversion = {
         'generics': {
             'nameDescription': 'description',
@@ -181,7 +181,8 @@ class LuaMonster:
             'attacks': self.generate_attacks_lua,
             'defenses': self.generate_defenses_lua,
             'elements': self.generate_elements_lua,
-            'immunities': self.generate_immunities_lua
+            'immunities': self.generate_immunities_lua,
+            'summons': self.generate_summons_lua
         })
 
     def generate_script(self):
@@ -306,7 +307,7 @@ class LuaMonster:
         return converted
 
     def generate_attacks_lua(self, processed: list) -> str:
-        script = '\nmonster.attacks = {\n'
+        script = f'\n{self.lua_var}.attacks = {{\n'
         for i, spell in enumerate(processed):
             comma = ',' if i < len(processed)-1 else ''
             script += f'{lua_table(spell, indent=1)}{comma}\n'
@@ -333,7 +334,7 @@ class LuaMonster:
         return converted
 
     def generate_defenses_lua(self, processed: list) -> str:
-        script = '\nmonster.defenses = {\n'
+        script = f'\n{self.lua_var}.defenses = {{\n'
         for i, spell in enumerate(processed):
             comma = ',' if i < len(processed) - 1 else ''
             script += f'{lua_table(spell, indent=1)}{comma}\n'
@@ -341,7 +342,7 @@ class LuaMonster:
         return script
 
     def generate_elements_lua(self, processed: dict) -> str:
-        script = '\nmonster.elements = {\n'
+        script = f'\n{self.lua_var}.elements = {{\n'
         i = 0
         for element, value in processed.items():
             comma = ',' if i < len(processed.keys()) - 1 else ''
@@ -356,11 +357,24 @@ class LuaMonster:
                 for key, val in immunities.items()}
 
     def generate_immunities_lua(self, processed: dict) -> str:
-        script = '\nmonster.immunities = {\n'
+        script = f'\n{self.lua_var}.immunities = {{\n'
         i = 0
         for element, value in processed.items():
             comma = ',' if i < len(processed.keys()) - 1 else ''
             script += f'\t{{type = {repr(element)}, combat = true}}' \
                       f'{comma}\n'
         script += '}'
+        return script
+
+    def generate_summons_lua(self, processed: dict) -> str:
+        script = f'\n{self.lua_var}.summons = {{\n'
+
+        for summon in processed['children']:
+            script += lua_table(summon, 1)
+
+        script += '\n}'
+
+        if max_summons := processed.get('maxSummons'):
+            script += f'\n{self.lua_var}.maxSummons = {max_summons}'
+
         return script
