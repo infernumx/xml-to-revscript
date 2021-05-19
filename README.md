@@ -55,7 +55,7 @@
 
 - [x] Immunities (only combat immunities for the moment)
 
-- [ ] Summons
+- [x] Summons
 
 - [ ] Voices
 
