@@ -16,17 +16,23 @@ def dict_int_values(d):
 
 
 def lua_table(d, indent=0) -> str:
-    i = 0
     table_tab = '\t' * indent
     tab = '\t' * (indent + 1)
     ret = f'{table_tab}{{\n'
-    for k, v in d.items():
-        i += 1
-        comma = ',' if i != len(d.keys()) else ''
-        value = (repr(v).lower()
-                 if isinstance(v, bool)
-                 else repr(v))
-        ret += f'{tab}{k} = {value}{comma}\n'
+    if isinstance(d, dict):
+        i = 0
+        for k, v in d.items():
+            i += 1
+            comma = ',' if i != len(d.keys()) else ''
+            value = (repr(v).lower()
+                     if isinstance(v, bool)
+                     else repr(v))
+            ret += f'{tab}{k} = {value}{comma}\n'
+    elif isinstance(d, list):
+        for i, v in enumerate(d):
+            comma = ',' if i != len(d) else ''
+            ret += f'{lua_table(v, 1)}{comma}\n'
+
     return f'{ret}{table_tab}}}'
 
 
@@ -353,17 +359,13 @@ class LuaMonster:
         return script
 
     def process_immunities(self, immunities: dict) -> dict:
-        return {key: bool(val)
-                for key, val in immunities.items()}
+        return [{'element': key,
+                 'combat': 'true'}
+                for key, val in immunities.items()]
 
-    def generate_immunities_lua(self, processed: dict) -> str:
-        script = f'\n{self.lua_var}.immunities = {{\n'
-        i = 0
-        for element, value in processed.items():
-            comma = ',' if i < len(processed.keys()) - 1 else ''
-            script += f'\t{{type = {repr(element)}, combat = true}}' \
-                      f'{comma}\n'
-        script += '}'
+    def generate_immunities_lua(self, processed: list) -> str:
+        pprint(processed)
+        script = f'\n{self.lua_var}.immunities = {lua_table(processed)}'
         return script
 
     def generate_summons_lua(self, processed: dict) -> str:

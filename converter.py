@@ -15,7 +15,8 @@ def init_argparse() -> argparse.ArgumentParser:
     return parser
 
 
-def convert_file(directory, name, failed, lua_var='monster'):
+def convert_file(directory, name, failed, lua_var):
+    lua_var = 'monster' if lua_var is None else lua_var
     lua_file = f'dump/{name[:-4]}.lua'
     try:
         print(f'> Writing {lua_file}')
