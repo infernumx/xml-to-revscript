@@ -144,18 +144,7 @@ class LuaMonster:
             'canwalkonfire': bool,
             'canwalkonpoison': bool,
             'hidehealth': bool,
-            'isboss': bool,
-            'staticattack': int,
-            'targetdistance': int,
-            'runonhealth': int,
-            'lightcolor': int,
-            'lightlevel': int
-        },
-        'attacks': {
-            'areaEffect': 'effect'
-        },
-        'defenses': {
-            'areaEffect': 'effect'
+            'isboss': bool
         }
     }
 
@@ -289,6 +278,7 @@ class LuaMonster:
     def process_flags(self, flags: list) -> dict:
         flag_conversion = LuaMonster.conversion.get('flags')
         return {flag: flag_conversion[flag](val)
+                if flag_conversion.get(flag) else val
                 for flag, val in flags.items()}
 
     def generate_flag_lua(self, processed: dict) -> str:
@@ -296,7 +286,6 @@ class LuaMonster:
         return script
 
     def process_attacks(self, attacks: list) -> list:
-        conversion = LuaMonster.conversion.get('attacks')
         converted = []
 
         for attack in attacks['children']:
@@ -304,12 +293,8 @@ class LuaMonster:
             if children := attack.get('children'):
                 for child in children:
                     # Convert XML child keys to Lua equivalent
-                    key = child['key']
-                    value = child['value']
-                    if conv := conversion.get(key):
-                        node[conv] = value
-                    else:
-                        node[key] = value
+                    key = child['key'] if child['key'] != 'areaEffect' else 'effect'
+                    node[key] = child['value']
             converted.append(node)
 
         return converted
@@ -323,7 +308,6 @@ class LuaMonster:
         return script
 
     def process_defenses(self, defenses: list) -> list:
-        conversion = LuaMonster.conversion.get('defenses')
         converted = []
 
         for defense in defenses['children']:
@@ -331,12 +315,8 @@ class LuaMonster:
             if children := defense.get('children'):
                 for child in children:
                     # Convert XML child keys to Lua equivalent
-                    key = child['key']
-                    value = child['value']
-                    if conv := conversion.get(key):
-                        node[conv] = value
-                    else:
-                        node[key] = value
+                    key = child['key'] if child['key'] != 'areaEffect' else 'effect'
+                    node[key] = child['value']
             converted.append(node)
 
         return converted
