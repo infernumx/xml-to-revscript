@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from monster import XMLMonster, LuaMonster
 from pprint import pprint
 import os

@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 from dispatchtable import DispatchTable
 from pprint import pprint
 import textwrap
+import re
 
 
 def dict_int_values(d):
@@ -342,7 +343,7 @@ class LuaMonster:
 
     def process_immunities(self, immunities: dict) -> dict:
         return [{'element': key,
-                 'combat': 'true'}
+                 'combat': True}
                 for key, val in immunities.items()]
 
     def generate_immunities_lua(self, processed: list) -> str:
