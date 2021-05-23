@@ -57,7 +57,7 @@
 
 - [x] Summons
 
-- [ ] Voices
+- [x] Voices
 
 - [ ] Loot
 
