@@ -31,7 +31,7 @@ def lua_table(d, indent=0) -> str:
     elif isinstance(d, list):
         for i, v in enumerate(d):
             comma = ',' if i != len(d) else ''
-            ret += f'{lua_table(v, 1)}{comma}\n'
+            ret += f'{lua_table(v, indent+1)}{comma}\n'
 
     return f'{ret}{table_tab}}}'
 
@@ -179,7 +179,8 @@ class LuaMonster:
             'flags': self.process_flags,
             'attacks': self.process_attacks,
             'defenses': self.process_defenses,
-            'immunities': self.process_immunities
+            'immunities': self.process_immunities,
+            'voices': self.process_voices
         })
         self.generator = DispatchTable({
             'generics': self.generate_generics_lua,
@@ -188,7 +189,8 @@ class LuaMonster:
             'defenses': self.generate_defenses_lua,
             'elements': self.generate_elements_lua,
             'immunities': self.generate_immunities_lua,
-            'summons': self.generate_summons_lua
+            'summons': self.generate_summons_lua,
+            'voices': self.generate_voices_lua
         })
 
     def generate_script(self):
@@ -364,7 +366,6 @@ class LuaMonster:
                 for key, val in immunities.items()]
 
     def generate_immunities_lua(self, processed: list) -> str:
-        pprint(processed)
         script = f'\n{self.lua_var}.immunities = {lua_table(processed)}'
         return script
 
@@ -379,4 +380,28 @@ class LuaMonster:
         if max_summons := processed.get('maxSummons'):
             script += f'\n{self.lua_var}.maxSummons = {max_summons}'
 
+        return script
+
+    def process_voices(self, voices: dict) -> dict:
+        conversion = LuaMonster.conversion.get('voices')
+        children = []
+        for voice in voices['children']:
+            d = {
+                'text': voice.get('sentence'),
+                'yell': bool(voice.get('yell'))
+            }
+            children.append(d)
+        voices['children'] = children
+        return voices
+
+    def generate_voices_lua(self, processed: dict) -> str:
+        script = f'\n{self.lua_var}.voices = {{\n'
+        if interval := processed.get('interval'):
+            script += f'\tinterval = {interval},\n'
+        if chance := processed.get('chance'):
+            script += f'\tchance = {chance},\n'
+        for i, voice in enumerate(processed['children']):
+            comma = ',' if i < len(processed['children']) - 1 else ''
+            script += f'{lua_table(voice, indent=1)}{comma}\n'
+        script += '}'
         return script
