@@ -34,10 +34,17 @@ def lua_table(d: dict, indent: int=0) -> str:
         for k, v in d.items():
             i += 1
             comma = ',' if i != len(d.keys()) else ''
-            value = (repr(v).lower()
-                     if isinstance(v, bool)
-                     else repr(v))
-            ret += f'{tab}{k} = {value}{comma}\n'
+            if isinstance(v, list):
+                ret += f'{tab}{k} = {{\n'
+                for j, el in enumerate(v):
+                    com = ',' if j != len(v) - 1 else ''
+                    ret += f'{lua_table(el, indent=3)}{com}\n'
+                ret += f'{tab}}}\n'
+            else:
+                value = (repr(v).lower()
+                        if isinstance(v, bool)
+                        else repr(v))
+                ret += f'{tab}{k} = {value}{comma}\n'
     elif isinstance(d, list):
         for i, v in enumerate(d):
             comma = ',' if i != len(d) else ''

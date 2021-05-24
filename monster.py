@@ -112,7 +112,8 @@ class LuaMonster:
             'immunities': self.generate_immunities_lua,
             'summons': self.generate_summons_lua,
             'voices': self.generate_voices_lua,
-            'script': self.generate_creaturescript_lua
+            'script': self.generate_creaturescript_lua,
+            'loot': self.generate_loot_lua
         })
 
     def generate_script(self):
@@ -336,4 +337,14 @@ class LuaMonster:
     def generate_creaturescript_lua(self, processed: list) -> str:
         script = '\n' + '\n'.join(f'{self.lua_var}:registerEvent({repr(event["name"])})'
                            for event in processed['children'])
+        return script
+
+    def generate_loot_lua(self, processed: dict) -> str:
+        script = f'\n{self.lua_var}.loot = {{\n'
+        for i, item in enumerate(processed['children']):
+            if item.get('children'):
+                item['child'] = item.pop('children')
+            comma = ',' if i < len(processed['children']) - 1 else ''
+            script += f'{lua_table(item, indent=1)}{comma}\n'
+        script += '}'
         return script

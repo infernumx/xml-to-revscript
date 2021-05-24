@@ -61,10 +61,4 @@
 
 - [x] Scripts
 
-- [ ] Loot
-
-  
-
-## Confirmed fully working generators
-
-- [x] Flags
+- [x] Loot
