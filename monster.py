@@ -139,6 +139,8 @@ class LuaMonster:
             except NotImplementedError:
                 pass
 
+        script += f'\nmType:register({self.lua_var})'
+
         return script
 
     def process_generics(self, generics: dict) -> dict:
