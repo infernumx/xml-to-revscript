@@ -73,11 +73,7 @@ class XMLMonster:
 
 
 class LuaMonster:
-    # TODO: allow nested attrs to have different conversions
-    # if converter has nested attrs, but 1 converter, use the converter for all
-    # ex: applying int() to <health now="8200" max="8200" />
-    # TODO: process <script> tag
-    # TODO: handle condition immunities in generate_immunities_lua
+    # TODO: handle condition immunities in generate_immunities_lua (unsure if this is really needed)
 
     generator_order = [
         'generics',
