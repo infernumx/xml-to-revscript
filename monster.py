@@ -247,7 +247,69 @@ class LuaMonster:
             else:
                 #  No conversion, assign value back to original key
                 ret[attr] = value
+
         return ret
+
+    def process_flags(self, flags: list) -> dict:
+        flag_conversion = LuaMonster.conversion.get('flags')
+
+
+
+        return {flag: flag_conversion[flag](val)
+                if flag_conversion.get(flag) else val
+                for flag, val in flags.items()}
+
+    def process_attacks(self, attacks: list) -> list:
+        converted = []
+
+        for attack in attacks['children']:
+            node = {k: v for k, v in attack.items() if k != 'children'}
+
+            if children := attack.get('children'):
+                for child in children:
+                    # Convert XML child keys to Lua equivalent
+                    key = child['key'] if child['key'] != 'areaEffect' else 'effect'
+                    node[key] = child['value']
+
+            converted.append(node)
+
+        return converted
+
+    def process_defenses(self, defenses: list) -> list:
+        converted = []
+
+        for defense in defenses['children']:
+            node = {k: v for k, v in defense.items() if k != 'children'}
+
+            if children := defense.get('children'):
+                for child in children:
+                    # Convert XML child keys to Lua equivalent
+                    key = child['key'] if child['key'] != 'areaEffect' else 'effect'
+                    node[key] = child['value']
+
+            converted.append(node)
+
+        return converted
+
+    def process_immunities(self, immunities: dict) -> dict:
+        return [{'element': key,
+                 'combat': True}
+                for key, val in immunities.items()]
+
+    def process_voices(self, voices: dict) -> dict:
+        conversion = LuaMonster.conversion.get('voices')
+        children = []
+
+        for voice in voices['children']:
+            d = {
+                'text': voice.get('sentence'),
+                'yell': bool(voice.get('yell'))
+            }
+            children.append(d)
+
+        voices['children'] = children
+
+        return voices
 
     def generate_generics_lua(self, generics: dict) -> str:
         order = [
@@ -276,75 +338,42 @@ class LuaMonster:
 
         return script
 
-    def process_flags(self, flags: list) -> dict:
-        flag_conversion = LuaMonster.conversion.get('flags')
-        return {flag: flag_conversion[flag](val)
-                if flag_conversion.get(flag) else val
-                for flag, val in flags.items()}
-
     def generate_flag_lua(self, processed: dict) -> str:
         script = f'{self.lua_var}.flags = {lua_table(processed)}'
         return script
 
-    def process_attacks(self, attacks: list) -> list:
-        converted = []
-
-        for attack in attacks['children']:
-            node = {k: v for k, v in attack.items() if k != 'children'}
-            if children := attack.get('children'):
-                for child in children:
-                    # Convert XML child keys to Lua equivalent
-                    key = child['key'] if child['key'] != 'areaEffect' else 'effect'
-                    node[key] = child['value']
-            converted.append(node)
-
-        return converted
-
     def generate_attacks_lua(self, processed: list) -> str:
         script = f'\n{self.lua_var}.attacks = {{\n'
+
         for i, spell in enumerate(processed):
             comma = ',' if i < len(processed)-1 else ''
             script += f'{lua_table(spell, indent=1)}{comma}\n'
         script += '}'
+
         return script
-
-    def process_defenses(self, defenses: list) -> list:
-        converted = []
-
-        for defense in defenses['children']:
-            node = {k: v for k, v in defense.items() if k != 'children'}
-            if children := defense.get('children'):
-                for child in children:
-                    # Convert XML child keys to Lua equivalent
-                    key = child['key'] if child['key'] != 'areaEffect' else 'effect'
-                    node[key] = child['value']
-            converted.append(node)
-
-        return converted
 
     def generate_defenses_lua(self, processed: list) -> str:
         script = f'\n{self.lua_var}.defenses = {{\n'
+
         for i, spell in enumerate(processed):
             comma = ',' if i < len(processed) - 1 else ''
             script += f'{lua_table(spell, indent=1)}{comma}\n'
         script += '}'
+
         return script
 
     def generate_elements_lua(self, processed: dict) -> str:
         script = f'\n{self.lua_var}.elements = {{\n'
         i = 0
+
         for element, value in processed.items():
             comma = ',' if i < len(processed.keys()) - 1 else ''
             script += f'\t{{type = {repr(element)}, percent = {value}}}' \
                       f'{comma}\n'
             i += 1
+
         script += '}'
         return script
-
-    def process_immunities(self, immunities: dict) -> dict:
-        return [{'element': key,
-                 'combat': True}
-                for key, val in immunities.items()]
 
     def generate_immunities_lua(self, processed: list) -> str:
         script = f'\n{self.lua_var}.immunities = {lua_table(processed)}'
@@ -363,26 +392,18 @@ class LuaMonster:
 
         return script
 
-    def process_voices(self, voices: dict) -> dict:
-        conversion = LuaMonster.conversion.get('voices')
-        children = []
-        for voice in voices['children']:
-            d = {
-                'text': voice.get('sentence'),
-                'yell': bool(voice.get('yell'))
-            }
-            children.append(d)
-        voices['children'] = children
-        return voices
-
     def generate_voices_lua(self, processed: dict) -> str:
         script = f'\n{self.lua_var}.voices = {{\n'
+
         if interval := processed.get('interval'):
             script += f'\tinterval = {interval},\n'
+
         if chance := processed.get('chance'):
             script += f'\tchance = {chance},\n'
+
         for i, voice in enumerate(processed['children']):
             comma = ',' if i < len(processed['children']) - 1 else ''
             script += f'{lua_table(voice, indent=1)}{comma}\n'
+
         script += '}'
         return script
