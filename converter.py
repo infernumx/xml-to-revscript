@@ -37,6 +37,9 @@ def main():
     args = parser.parse_args()
     failed = []
 
+    if not os.path.exists('dump/'):
+        os.mkdir('dump/')
+
     # Only convert single file, defined by -f or --file
     if args.file:
         convert_file(args.directory, args.file,

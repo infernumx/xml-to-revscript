@@ -1,40 +1,8 @@
 import xml.etree.ElementTree as ET
-from dispatchtable import DispatchTable
+from helpers import *
 from pprint import pprint
 import textwrap
 import re
-
-
-def dict_int_values(d):
-    """Simple converter to turn all numeric dict values into integers"""
-    ret = {}
-    for key, val in d.items():
-        try:
-            ret[key] = int(val)
-        except ValueError:
-            ret[key] = val
-    return ret
-
-
-def lua_table(d, indent=0) -> str:
-    table_tab = '\t' * indent
-    tab = '\t' * (indent + 1)
-    ret = f'{table_tab}{{\n'
-    if isinstance(d, dict):
-        i = 0
-        for k, v in d.items():
-            i += 1
-            comma = ',' if i != len(d.keys()) else ''
-            value = (repr(v).lower()
-                     if isinstance(v, bool)
-                     else repr(v))
-            ret += f'{tab}{k} = {value}{comma}\n'
-    elif isinstance(d, list):
-        for i, v in enumerate(d):
-            comma = ',' if i != len(d) else ''
-            ret += f'{lua_table(v, indent+1)}{comma}\n'
-
-    return f'{ret}{table_tab}}}'
 
 
 class XMLMonster:
@@ -311,7 +279,7 @@ class LuaMonster:
 
         return voices
 
-    def generate_generics_lua(self, generics: dict) -> str:
+    def generate_generics_lua(self, processed: dict) -> str:
         order = [
             'description',
             'experience',
@@ -324,13 +292,13 @@ class LuaMonster:
         ]
 
         script = f'''
-                local mType = Game.createMonster("{generics["name"]}")
+                local mType = Game.createMonster("{processed["name"]}")
                 local {self.lua_var} = {{}}
                 '''
         script = textwrap.dedent(script)[1:]  # 1: removes initial newline
 
         for key in order:
-            if val := generics.get(key):
+            if val := processed.get(key):
                 if isinstance(val, dict):
                     script += f'{self.lua_var}.{key} = {lua_table(val)}\n'
                 else:
