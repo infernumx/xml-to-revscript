@@ -335,7 +335,7 @@ class LuaMonster:
         return script
 
     def generate_creaturescript_lua(self, processed: list) -> str:
-        script = '\n' + '\n'.join(f'{self.lua_var}:registerEvent({repr(event["name"])})'
+        script = '\n' + '\n'.join(f'mType:registerEvent({repr(event["name"])})'
                            for event in processed['children'])
         return script
 
