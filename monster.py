@@ -78,45 +78,6 @@ class LuaMonster:
     # TODO: process <script> tag
     # TODO: handle condition immunities in generate_immunities_lua
 
-    conversion = {
-        'generics': {
-            'nameDescription': 'description',
-            'look': {
-                '__node': 'outfit',
-                'type': 'lookType',
-                'corpse': {
-                    '__insert_root': True
-                }
-            },
-            'health': {
-                'max': {
-                    '__insert_root': True,
-                    'new_key': 'health',
-                },
-                'now': {
-                    '__insert_root': True,
-                    'new_key': 'maxHealth'
-                }
-            }
-        },
-        'flags': {
-            'attackable': bool,
-            'canpushcreatures': bool,
-            'canpushitems': bool,
-            'hostile': bool,
-            'pushable': bool,
-            'convinceable': bool,
-            'illusionable': bool,
-            'runonhealth': bool,
-            'summonable': bool,
-            'canwalkonenergy': bool,
-            'canwalkonfire': bool,
-            'canwalkonpoison': bool,
-            'hidehealth': bool,
-            'isboss': bool
-        }
-    }
-
     generator_order = [
         'generics',
         'flags',
@@ -177,54 +138,48 @@ class LuaMonster:
         return script
 
     def process_generics(self, generics: dict) -> dict:
-        generics_conversion = LuaMonster.conversion.get('generics')
-        ret = {}
+        ret = {k: v
+               for k, v in generics.items()
+               if k not in ('health', 'look', 'nameDescription')}
+        
+        if health := generics.get('health'):
+            ret['health'] = health['now']
+            ret['maxHealth'] = health['max']
 
-        for attr, value in generics.items():
-            if new_key := generics_conversion.get(attr):
-                # Handle nested nodes
-                if isinstance(new_key, dict):
-                    # Rename new nested node if new key is found, otherwise
-                    # fall back to original
-                    __node = (new_key['__node']
-                              if '__node' in new_key
-                              else attr)
-                    ret[__node] = {}
-                    for key, val in value.items():
-                        # Check for nested node key rename
-                        if inner_new := new_key.get(key):
-                            # Check for nodes that should be inserted to root
-                            if isinstance(inner_new, dict):
-                                if inner_new.get('__insert_root'):
-                                    # Prefer converted new_key, fallback to
-                                    # original if there is none
-                                    if _key := inner_new.get('new_key'):
-                                        ret[_key] = val
-                                    else:
-                                        ret[key] = val
-                            else:
-                                # Convert old nested node to new key name
-                                ret[__node][inner_new] = val
-                        else:
-                            # No conversion used here, assign nested as
-                            # defined previously
-                            ret[__node][key] = val
-                else:
-                    # Convert root key to new key name
-                    ret[new_key] = value
-            else:
-                #  No conversion, assign value back to original key
-                ret[attr] = value
+        if outfit := generics.get('look'):
+            if typeex := outfit.get('typeex'):
+                ret['outfit'] = {'lookTypeEx': typeex}
+            elif looktype := outfit.get('type'):
+                ret['outfit'] = {'lookType': looktype}
+            
+            if corpse := outfit.get('corpse'):
+                ret['corpse'] = corpse
+
+        if desc := generics.get('nameDescription'):
+            ret['description'] = desc
 
         return ret
 
     def process_flags(self, flags: list) -> dict:
-        flag_conversion = LuaMonster.conversion.get('flags')
+        conversion = {
+            'attackable': bool,
+            'canpushcreatures': bool,
+            'canpushitems': bool,
+            'hostile': bool,
+            'pushable': bool,
+            'convinceable': bool,
+            'illusionable': bool,
+            'runonhealth': bool,
+            'summonable': bool,
+            'canwalkonenergy': bool,
+            'canwalkonfire': bool,
+            'canwalkonpoison': bool,
+            'hidehealth': bool,
+            'isboss': bool
+        }
 
-
-
-        return {flag: flag_conversion[flag](val)
-                if flag_conversion.get(flag) else val
+        return {flag: conversion[flag](val)
+                if conversion.get(flag) else val
                 for flag, val in flags.items()}
 
     def process_attacks(self, attacks: list) -> list:
@@ -265,7 +220,6 @@ class LuaMonster:
                 for key, val in immunities.items()]
 
     def process_voices(self, voices: dict) -> dict:
-        conversion = LuaMonster.conversion.get('voices')
         children = []
 
         for voice in voices['children']:
