@@ -17,7 +17,8 @@ class XMLMonster:
             'immunities': self.parse_basic_ints,
             'summons': self.parse_full_node,
             'voices': self.parse_full_node,
-            'loot': self.parse_full_node
+            'loot': self.parse_full_node,
+            'script': self.parse_full_node
         })
 
         self.parsed = self.parse()
@@ -87,7 +88,8 @@ class LuaMonster:
         'immunities',
         'summons',
         'voices',
-        'loot'
+        'loot',
+        'script'
     ]
 
     def __init__(self, xml_monster, lua_var):
@@ -109,7 +111,8 @@ class LuaMonster:
             'elements': self.generate_elements_lua,
             'immunities': self.generate_immunities_lua,
             'summons': self.generate_summons_lua,
-            'voices': self.generate_voices_lua
+            'voices': self.generate_voices_lua,
+            'script': self.generate_creaturescript_lua
         })
 
     def generate_script(self):
@@ -328,4 +331,9 @@ class LuaMonster:
             script += f'{lua_table(voice, indent=1)}{comma}\n'
 
         script += '}'
+        return script
+
+    def generate_creaturescript_lua(self, processed: list) -> str:
+        script = '\n' + '\n'.join(f'{self.lua_var}:registerEvent({repr(event["name"])})'
+                           for event in processed['children'])
         return script

@@ -59,6 +59,8 @@
 
 - [x] Voices
 
+- [x] Scripts
+
 - [ ] Loot
 
   
