@@ -248,7 +248,7 @@ class LuaMonster:
         ]
 
         script = f'''
-                local mType = Game.createMonster("{processed["name"]}")
+                local mType = Game.createMonsterType("{processed["name"]}")
                 local {self.lua_var} = {{}}
                 '''
         script = textwrap.dedent(script)[1:]  # 1: removes initial newline
